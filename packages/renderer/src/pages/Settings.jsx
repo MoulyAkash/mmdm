@@ -88,7 +88,9 @@ function Settings() {
 
   return (
     <>
-      Settings
+      <div style={{ height: "40%", width: "100%", textAlign: "center" }}>
+        <p style={{ paddingTop: "8%", fontSize: 75 }}>Library</p>
+      </div>
     </>
   )
 }

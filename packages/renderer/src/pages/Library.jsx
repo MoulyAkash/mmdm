@@ -53,44 +53,49 @@ function Library() {
 
   return (
     <>
-      <div className="section mb-3">
-        <div className="movie-search">
-          <InputSearch
-            type="text"
-            placeholder="Enter keyword"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-          <button className="search-button">Search</button>
-        </div>
+      <div style={{ height: "40%", width: "100%", textAlign: "center" }}>
+        <p style={{ paddingTop: "8%", fontSize: 75 }}>Library</p>
       </div>
-      <div className="movie-grid">
-        {items.map((item, i) => {
-          const link =
-            "/" +
-            category[item.category] +
-            "/" +
-            item.id +
-            "/" +
-            item.original_title || item.original_name;
+      <div style={{ padding: 40 }}>
+        <div className="section mb-3">
+          <div className="movie-search" style={{ paddingBottom: 20 }}>
+            <InputSearch
+              type="text"
+              placeholder="Enter keyword"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            <button className="search-button">Search</button>
+          </div>
+        </div>
+        <div className="movie-grid">
+          {items.map((item, i) => {
+            const link =
+              "/" +
+              category[item.category] +
+              "/" +
+              item.id +
+              "/" +
+              item.original_title || item.original_name;
 
-          return (
-            <SNavLink to={link} key={i}>
-              <div className="movie-card">
-                <img
-                  src={apiConfig.w500Image(item.poster_path)}
-                  alt={item.original_title}
-                />
-                <div>
-                  <AiFillPlayCircle />
+            return (
+              <SNavLink to={link} key={i}>
+                <div className="movie-card">
+                  <img
+                    src={apiConfig.w500Image(item.poster_path)}
+                    alt={item.original_title}
+                  />
+                  <div>
+                    <AiFillPlayCircle />
+                  </div>
                 </div>
-              </div>
-              <div className="card-title">
-                {item.original_title || item.original_name}
-              </div>
-            </SNavLink>
-          );
-        })}
+                <div className="card-title">
+                  {item.original_title || item.original_name}
+                </div>
+              </SNavLink>
+            );
+          })}
+        </div>
       </div>
     </>
   )

@@ -46,13 +46,6 @@ const items = [
     },
     {
         label: (
-            <NavLink to={'/timeline'}>TimeLine</NavLink>
-        ),
-        key: 'timeline',
-        icon: <MdTimelapse />,
-    },
-    {
-        label: (
             <NavLink to={'/movie'}>Movie</NavLink>
         ),
         key: 'movies',
