@@ -1,0 +1,142 @@
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.btn-container {
+
+    display: flex;
+    justify-content: center;
+
+    &__loadmore {
+        outline: none;
+        height: 40px;
+        text-align: center;
+        width: 130px;
+        border-radius: 40px;
+        background: black;
+        border: 2px solid red;
+        letter-spacing: 1px;
+        text-shadow: 0;
+        color: white;
+        cursor: pointer;
+        transition: all 0.25s ease;
+
+        font: {
+            size: 12px;
+            font-weight: bold;
+        }
+
+        &:hover {
+            color: black;
+            background: red;
+        }
+
+        &:active {
+            letter-spacing: 2px;
+        }
+    }
+}
+
+.search-button {
+    outline: none;
+    height: 40px;
+    text-align: center;
+    width: 130px;
+    border-radius: 40px;
+    background: black;
+    border: 2px solid red;
+    letter-spacing: 1px;
+    text-shadow: 0;
+    color: white;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    font: {
+        size: 12px;
+        font-weight: bold;
+    }
+
+    &:hover {
+        color: black;
+        background: red;
+    }
+
+    &:active {
+        letter-spacing: 2px;
+    }
+}
+
+.movie-card {
+    min-height: 25rem;
+    border-radius: 2rem;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s;
+    transition-timing-function: ease;
+
+    img {
+        border-radius: 1rem;
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    div {
+        position: absolute;
+        display: flex;
+        width: 80px;
+        height: 80px;
+        justify-content: center;
+        align-items: center;
+        color: red;
+        background-color: #1F1F1F;
+        border-radius: 50%;
+        font-size: 45px;
+        visibility: hidden;
+    }
+
+    :hover {
+        box-shadow: 0 0 20px red;
+
+        img {
+            opacity: 0.4;
+        }
+
+        div {
+            visibility: visible;
+            animation: grow 1s infinite;
+        }
+    }
+}
+
+.card-title {
+    padding-top: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #d9d9d9;
+}
+
+.movie-search {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+
+    input {
+        width: 100%;
+        padding-right: 8rem;
+    }
+
+    button {
+        position: absolute;
+        right: 0;
+        top: 1px;
+    }
+}
