@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, NavLink } from "react-router-dom";
 import styled from "styled-components";
 
@@ -13,7 +13,13 @@ import CastList from "./CastList";
 import VideoList from "./VideoList";
 import MovieList from "../../components/movie-list/MovieList";
 
+import { LibraryContext } from "../../GlobalContext";
+
 const Details = () => {
+
+  const { library, setLibrary } = useContext(LibraryContext);
+  const [isPresentInLibrary, setIsPresentInLibrary] = useState(false);
+
   const { category, id, name } = useParams();
 
   const [item, setItem] = useState(null);
@@ -28,13 +34,17 @@ const Details = () => {
 
     const getTMDBMagnets = async () => {
       const response = await getTMDB(id, category);
-    //   const response = await getTMDB(name, "test");
+      //   const response = await getTMDB(name, "test");
       setRarbgItems(response);
     };
 
     getDetail();
     getTMDBMagnets();
   }, [category, id]);
+
+  useEffect(() => {
+    checkPresenceInLibrary();
+  }, [item]);
 
   useEffect(() => {
     if (rarbgItems != null) {
@@ -68,6 +78,40 @@ const Details = () => {
   }, [rarbgItems]);
 
   console.log(item);
+
+  const addToLibrary = () => {
+    for (let i = 0; i < library.length; i++) {
+      if (library[i].id === item.id)
+        return;
+    }
+    library.push({ ...item, category });
+    console.log("Current library: ", library);
+    setIsPresentInLibrary(true);
+  }
+
+  const removeFromLibrary = () => {
+    for (let i = 0; i < library.length; i++) {
+      if (library[i].id === item.id) {
+        library.splice(i, 1);
+        return;
+      }
+    }
+    console.log("Current library: ", library);
+    setIsPresentInLibrary(false);
+  }
+
+  const checkPresenceInLibrary = () => {
+    if (item === null)
+      return;
+    for (let i = 0; i < library.length; i++) {
+      if (library[i].id === item.id) {
+        console.log("Here");
+        setIsPresentInLibrary(true);
+        return;
+      }
+    }
+    setIsPresentInLibrary(false);
+  }
 
   console.log(rarbgItems);
 
@@ -115,10 +159,15 @@ const Details = () => {
               </div>
             </div>
             <button className="genres__item">
-              <NavLink to={"/player/" + category + "/" + item.id} item={item}>
+              <NavLink to={"/player/" + category + "/" + item.id} item={item} style={{ color: "white" }}>
                 Watch Now
               </NavLink>
             </button>
+            {isPresentInLibrary ? <button className="genres__item" onClick={() => removeFromLibrary()} style={{ marginLeft: 20 }}>
+              Remove from Library
+            </button> : <button className="genres__item" onClick={() => addToLibrary()} style={{ marginLeft: 20 }}>
+              Add to Library
+            </button>}
           </div>
           <div className="container">
             <div className="section mb-3">
