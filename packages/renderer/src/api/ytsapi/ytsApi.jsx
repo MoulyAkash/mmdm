@@ -1,10 +1,10 @@
 // @ts-nocheck
-import axiosClient from "./ytsAxiosClient";
+import ytsAxiosClient from "./ytsAxiosClient";
 
 const ytsApi = {
-    getYTSMovieMagnets: (params) => {
-        return axiosClient.get('', params);
-    }
-}
+  getYTSMovieMagnets: (params) => {
+    return ytsAxiosClient.get("", params);
+  },
+};
 
 export default ytsApi;

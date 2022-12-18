@@ -38,7 +38,8 @@
     "styled-components": "^5.3.5",
     "torrent-search-api": "^2.1.4",
     "webtorrent": "^1.8.14",
-    "webtorrent-player": "github:ThaUnknown/webtorrent-player"
+    "webtorrent-player": "github:ThaUnknown/webtorrent-player",
+    "zipson": "^0.2.12"
   },
   "devDependencies": {
     "@types/node": "^17.0.36",

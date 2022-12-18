@@ -4,6 +4,8 @@ import { useParams, NavLink } from "react-router-dom";
 import screenfull from "screenfull";
 import ReactPlayer from "react-player";
 
+import { w2gContext } from "../GlobalContext";
+
 import {
   MdReplay10,
   MdPlayArrow,
@@ -108,9 +110,12 @@ let duration = 0.1;
 let videos = [];
 let subHeaders = null;
 let volume = localStorage.getItem("volume") || 1;
+let paused = false;
 
 function Player(props) {
   const { category, id } = useParams();
+
+  const { w2gEnabled, setW2gEnabled } = useContext(w2gContext);
 
   const [item, setItem] = useState(null);
 
@@ -142,8 +147,8 @@ function Player(props) {
   }
 
   async function handleCurrent(file) {
-    console.log("handleCurrent triggered");
-    console.log(file);
+    // console.log("handleCurrent triggered");
+    // console.log(file);
     if (file) {
       currentTime = 0;
       media = null;
@@ -154,8 +159,8 @@ function Player(props) {
       // src = file.url
       setSrc(file.url);
       setFilePath(file.path);
-      console.log("File: " + file);
-      client.send("current", file);
+      // console.log("File: " + file);
+      // client.send("current", file);
       video?.load();
     }
   }
@@ -218,7 +223,35 @@ function Player(props) {
     };
 
     getDetail();
+
+    //code that handles w2g client side
+    document.addEventListener("w2gEmitter", handleEvent);
+
+    return () => document.removeEventListener("w2gEmitter", handleEvent);
   }, []);
+
+  function handleEvent(e) {
+    if (e.detail.type === "pauseVideo") {
+      if (!paused) {
+        setIsPaused(true);
+        paused = true;
+      }
+    }
+    if (e.detail.type === "resumeVideo") {
+      if (paused) {
+        setIsPaused(false);
+        paused = false;
+      }
+    }
+    if (e.detail.type === "setTime") {
+      if (e.detail.fraction)
+        playerRef.current.seekTo(Math.floor(e.detail.time) / 100, "fraction");
+      else playerRef.current.seekTo(e.detail.time);
+    }
+    if (e.detail.type === "revForVideo") {
+      playerRef.current.seekTo(e.detail.time);
+    }
+  }
 
   useEffect(() => {
     updateFiles(files);
@@ -232,17 +265,39 @@ function Player(props) {
     });
   }, [navigator.mediaSession]);
 
-  console.log("Source = ");
-  console.log(src);
-  console.log("Path: " + filePath);
+  // console.log("Source = ");
+  // console.log(src);
+  // console.log("Path: " + filePath);
 
   const handleRewind = () => {
-    console.log(playerRef.current.getCurrentTime());
+    // console.log(playerRef.current.getCurrentTime());
     playerRef.current.seekTo(playerRef.current.getCurrentTime() - 10);
+    if (w2gEnabled === "host") {
+      document.dispatchEvent(
+        new CustomEvent("w2gInit", {
+          detail: {
+            type: "setTime",
+            time: playerRef.current.getCurrentTime(),
+            fraction: false,
+          },
+        })
+      );
+    }
   };
 
   const handleForward = () => {
     playerRef.current.seekTo(playerRef.current.getCurrentTime() + 10);
+    if (w2gEnabled === "host") {
+      document.dispatchEvent(
+        new CustomEvent("w2gInit", {
+          detail: {
+            type: "setTime",
+            time: playerRef.current.getCurrentTime(),
+            fraction: false,
+          },
+        })
+      );
+    }
   };
 
   const onVolumeChange = () => {
@@ -256,6 +311,17 @@ function Player(props) {
       Math.floor(progressBarRef.current.value) / 100,
       "fraction"
     );
+    if (w2gEnabled === "host") {
+      document.dispatchEvent(
+        new CustomEvent("w2gInit", {
+          detail: {
+            type: "setTime",
+            time: progressBarRef.current.value,
+            fraction: true,
+          },
+        })
+      );
+    }
   };
 
   const handleMute = () => {
@@ -273,8 +339,33 @@ function Player(props) {
     let playedSeconds = new Date(callbackValues.playedSeconds * 1000)
       .toISOString()
       .substr(11, 8);
+    // console.log(callbackValues.playedSeconds);
     setPresentTime(playedSeconds);
     setPlayed(callbackValues.played);
+  };
+
+  const handlePause = () => {
+    if (w2gEnabled === "host") {
+      if (!paused) {
+        document.dispatchEvent(
+          new CustomEvent("w2gInit", {
+            detail: {
+              type: "pauseVideo",
+            },
+          })
+        );
+      } else {
+        document.dispatchEvent(
+          new CustomEvent("w2gInit", {
+            detail: {
+              type: "resumeVideo",
+            },
+          })
+        );
+      }
+    }
+    setIsPaused((prevIsPaused) => !prevIsPaused);
+    paused = !paused;
   };
 
   return (
@@ -286,7 +377,7 @@ function Player(props) {
             ref={playerRef}
             url={src}
             // url='https://www.youtube.com/watch?v=DsZAFD5Y0sM'
-            playing={isPaused}
+            playing={!isPaused}
             muted={isMuted}
             pip={isPip}
             controls={false}
@@ -298,10 +389,7 @@ function Player(props) {
             progressInterval={500}
             height="100%"
             width="100%"
-            onClick={() => {
-              setIsPaused((prevIsPaused) => !prevIsPaused);
-              console.log(subs);
-            }}
+            onClick={handlePause}
           />
           <div ref={controlsRef} className="controls">
             <div className="progress-area">
@@ -332,21 +420,17 @@ function Player(props) {
                 </span>
 
                 <span className="icon">
-                  {isPaused ? (
+                  {!isPaused ? (
                     <MdPause
                       className="material-icons play_pause"
-                      onClick={() =>
-                        setIsPaused((prevIsPaused) => !prevIsPaused)
-                      }
+                      onClick={handlePause}
                     >
                       play_arrow
                     </MdPause>
                   ) : (
                     <MdPlayArrow
                       className="material-icons play_pause"
-                      onClick={() =>
-                        setIsPaused((prevIsPaused) => !prevIsPaused)
-                      }
+                      onClick={handlePause}
                     >
                       play_arrow
                     </MdPlayArrow>

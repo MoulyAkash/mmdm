@@ -6237,3 +6237,8 @@
   dependencies:
     "buffer-crc32" "~0.2.3"
     "fd-slicer" "~1.1.0"
+
+"zipson@^0.2.12":
+  "integrity" "sha512-+u+fyZQXJUJDTf4NGCChW+LoWGqCrhwHAfvtCtcmE0e40KmQt4YSP4l3TOay1WjRNv+VfODgBD/vNwaSSGnDwA=="
+  "resolved" "https://registry.npmjs.org/zipson/-/zipson-0.2.12.tgz"
+  "version" "0.2.12"

@@ -1,9 +1,10 @@
 // @ts-nocheck
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, NavLink } from "react-router-dom";
+import { useParams, NavLink, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import tmdbApi from "../../api/tmdbApi";
+import rarbgApi from "../../api/rarbgapi/rarbgApi";
 import apiConfig from "../../api/apiConfig";
 import getTMDB from "../../modules/fetchMovieMagnets";
 import { add } from "../../modules/torrent";
@@ -14,10 +15,12 @@ import VideoList from "./VideoList";
 import MovieList from "../../components/movie-list/MovieList";
 
 import { LibraryContext } from "../../GlobalContext";
+import { w2gContext } from "../../GlobalContext";
 
 const Details = () => {
-
+  const navigate = useNavigate();
   const { library, setLibrary } = useContext(LibraryContext);
+  const { w2gEnabled, setW2gEnabled } = useContext(w2gContext);
   const [isPresentInLibrary, setIsPresentInLibrary] = useState(false);
 
   const { category, id, name } = useParams();
@@ -30,64 +33,70 @@ const Details = () => {
     const getDetail = async () => {
       const response = await tmdbApi.detail(category, id, { params: {} });
       setItem(response);
+      console.log(response);
     };
-
-    const getTMDBMagnets = async () => {
-      const response = await getTMDB(id, category);
-      //   const response = await getTMDB(name, "test");
-      setRarbgItems(response);
-    };
-
     getDetail();
-    getTMDBMagnets();
-  }, [category, id]);
+  }, []);
+
+  const getTMDBMagnets = async (id) => {
+    // const response = await getTMDB(id, category);
+    // const response = await getTMDB(name, "test");
+    const response = await rarbgApi.getTMDBTorrents(id);
+    setRarbgItems(response.torrent_results);
+    console.log(response.torrent_results);
+  };
 
   useEffect(() => {
     checkPresenceInLibrary();
+    item && getTMDBMagnets(item.id);
   }, [item]);
 
   useEffect(() => {
     if (rarbgItems != null) {
-      rarbgItems.sort(function (a, b) {
-        return b.seeders - a.seeders;
-      });
       for (let i = 0; i < rarbgItems.length; i++) {
         if (
-          !rarbgItems[i].title.includes("DTC") &&
-          !rarbgItems[i].title.includes("REMUX") &&
-          !rarbgItems[i].title.includes("2160p") &&
-          !rarbgItems[i].title.includes("4K") &&
-          !rarbgItems[i].title.includes("HEVC") &&
-          !rarbgItems[i].title.includes("DTS") &&
-          !rarbgItems[i].title.includes("H.265") &&
-          !rarbgItems[i].title.includes("EAC3") &&
-          !rarbgItems[i].title.includes("DDP5") &&
-          !rarbgItems[i].title.includes("DDP") &&
-          !rarbgItems[i].title.includes("Atmos") &&
-          !rarbgItems[i].title.includes("ATMOS") &&
-          !rarbgItems[i].title.includes("CAKES") &&
-          !rarbgItems[i].title.includes("x265") &&
-          !rarbgItems[i].title.includes("X265")
+          !rarbgItems[i]?.filename?.includes("DTC") &&
+          !rarbgItems[i]?.filename?.includes("REMUX") &&
+          !rarbgItems[i]?.filename?.includes("2160p") &&
+          !rarbgItems[i]?.filename?.includes("4K") &&
+          !rarbgItems[i]?.filename?.includes("HEVC") &&
+          !rarbgItems[i]?.filename?.includes("DTS") &&
+          !rarbgItems[i]?.filename?.includes("H.265") &&
+          !rarbgItems[i]?.filename?.includes("EAC3") &&
+          !rarbgItems[i]?.filename?.includes("DDP5") &&
+          !rarbgItems[i]?.filename?.includes("DDP") &&
+          !rarbgItems[i]?.filename?.includes("Atmos") &&
+          !rarbgItems[i]?.filename?.includes("ATMOS") &&
+          !rarbgItems[i]?.filename?.includes("CAKES") &&
+          !rarbgItems[i]?.filename?.includes("x265") &&
+          !rarbgItems[i]?.filename?.includes("X265") &&
+          rarbgItems[i]?.filename?.includes("1080p")
         ) {
           add(rarbgItems[i].download || rarbgItems[i].magnet);
-          //   add("magnet:?xt=urn:btih:4dc5ff0a9c6e74ff841c87d126e7790781cbe287&dn=%5BErai-raws%5D%20Spy%20x%20Family%20-%2001%20%5B1080p%5D%5BMultiple%20Subtitle%5D%5B24A04FB0%5D.mkv&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce");
+          if (w2gEnabled === "host") {
+            document.dispatchEvent(
+              new CustomEvent("w2gInit", {
+                detail: {
+                  type: "addTorrent",
+                  torrent: rarbgItems[i].download || rarbgItems[i].magnet,
+                },
+              })
+            );
+          }
           break;
         }
       }
     }
   }, [rarbgItems]);
 
-  console.log(item);
-
   const addToLibrary = () => {
     for (let i = 0; i < library.length; i++) {
-      if (library[i].id === item.id)
-        return;
+      if (library[i].id === item.id) return;
     }
     library.push({ ...item, category });
     console.log("Current library: ", library);
     setIsPresentInLibrary(true);
-  }
+  };
 
   const removeFromLibrary = () => {
     for (let i = 0; i < library.length; i++) {
@@ -98,11 +107,10 @@ const Details = () => {
     }
     console.log("Current library: ", library);
     setIsPresentInLibrary(false);
-  }
+  };
 
   const checkPresenceInLibrary = () => {
-    if (item === null)
-      return;
+    if (item === null) return;
     for (let i = 0; i < library.length; i++) {
       if (library[i].id === item.id) {
         console.log("Here");
@@ -111,9 +119,7 @@ const Details = () => {
       }
     }
     setIsPresentInLibrary(false);
-  }
-
-  console.log(rarbgItems);
+  };
 
   return (
     <>
@@ -158,16 +164,41 @@ const Details = () => {
                 <CastList id={item.id} />
               </div>
             </div>
-            <button className="genres__item">
-              <NavLink to={"/player/" + category + "/" + item.id} item={item} style={{ color: "white" }}>
-                Watch Now
-              </NavLink>
+            <button
+              className="genres__item"
+              onClick={() => {
+                if (w2gEnabled === "host") {
+                  document.dispatchEvent(
+                    new CustomEvent("w2gInit", {
+                      detail: {
+                        type: "watchNow",
+                        path: "/player/" + category + "/" + item.id,
+                      },
+                    })
+                  );
+                }
+                navigate("/player/" + category + "/" + item.id);
+              }}
+            >
+              Watch Now
             </button>
-            {isPresentInLibrary ? <button className="genres__item" onClick={() => removeFromLibrary()} style={{ marginLeft: 20 }}>
-              Remove from Library
-            </button> : <button className="genres__item" onClick={() => addToLibrary()} style={{ marginLeft: 20 }}>
-              Add to Library
-            </button>}
+            {isPresentInLibrary ? (
+              <button
+                className="genres__item"
+                onClick={() => removeFromLibrary()}
+                style={{ marginLeft: 20 }}
+              >
+                Remove from Library
+              </button>
+            ) : (
+              <button
+                className="genres__item"
+                onClick={() => addToLibrary()}
+                style={{ marginLeft: 20 }}
+              >
+                Add to Library
+              </button>
+            )}
           </div>
           <div className="container">
             <div className="section mb-3">

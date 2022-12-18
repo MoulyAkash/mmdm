@@ -113,7 +113,9 @@ const MovieGrid = (props) => {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
-          <button className="search-button">Search</button>
+          <button className="search-button" onClick={makeSearch}>
+            Search
+          </button>
         </div>
       </div>
       <div className="movie-grid">

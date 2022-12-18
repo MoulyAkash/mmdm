@@ -1,26 +1,29 @@
 import axios from "axios";
-import queryString from 'query-string';
+import queryString from "query-string";
 
-import apiConfig from "./ytsApiConfig";
+import ytsApiConfig from "./ytsApiConfig";
 
-const axiosClient = axios.create({
-    baseURL: apiConfig.baseUrl,
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    paramsSerializer: params => queryString.stringify({...params})
+const ytsAxiosClient = axios.create({
+  baseURL: ytsApiConfig.baseUrl,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  paramsSerializer: (params) => queryString.stringify({ ...params }),
 });
 
-axiosClient.interceptors.request.use(async (config) => config);
+ytsAxiosClient.interceptors.request.use(async (config) => config);
 
-axiosClient.interceptors.response.use((response) => {
+ytsAxiosClient.interceptors.response.use(
+  (response) => {
     if (response && response.data) {
-        return response.data.data.movie;
+      return response.data.data.movie;
     }
 
     return response;
-}, (error) => {
+  },
+  (error) => {
     throw error;
-})
+  }
+);
 
-export default axiosClient;
+export default ytsAxiosClient;
